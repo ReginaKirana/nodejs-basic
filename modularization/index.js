@@ -1,3 +1,10 @@
+// ================================
+// Pembelajaran: Modularization
+// ================================
+
+// File ini sebagai entry point.
+// Kita belajar mengimpor modul lokal (Tiger dan Wolf) dan membuat instance mereka.
+
 const Tiger = require('./Tiger');
 const Wolf = require('./Wolf');
 
