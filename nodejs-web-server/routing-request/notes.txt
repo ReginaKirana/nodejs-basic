@@ -1,0 +1,113 @@
+📌 Materi Routing Request di Node.js
+
+1️⃣ Pengertian Routing Request
+Routing adalah cara server menentukan respons berdasarkan URL (path) dan method request yang dikirim client.
+Contoh:
+http://localhost:5000/ → Homepage
+http://localhost:5000/about → Halaman About
+URL lain → Halaman tidak ditemukan
+
+
+2️⃣ Properti Request yang Digunakan
+request.url → mengambil path URL yang diminta (misal /about)
+request.method → method HTTP yang digunakan (GET, POST, dll)
+Contoh:
+const { method, url } = request;
+
+
+3️⃣ Struktur Routing di Node.js
+Gunakan if-else berdasarkan URL dan method:
+if (url === '/') {
+    // logika untuk homepage
+} else if (url === '/about') {
+    // logika untuk about
+} else {
+    // logika untuk URL lain
+}
+Contoh Homepage (/)
+if (url === '/') {
+    if (method === 'GET') {
+        response.end('<h1>Ini adalah homepage</h1>');
+    } else {
+        response.end(`<h1>Halaman tidak dapat diakses dengan ${method} request</h1>`);
+    }
+}
+Contoh About (/about)
+else if (url === '/about') {
+    if (method === 'GET') {
+        response.end('<h1>Halo ini adalah halaman about</h1>');
+    } else if (method === 'POST') {
+        let body = [];
+
+        request.on('data', chunk => {
+            body.push(chunk);
+        });
+
+        request.on('end', () => {
+            body = Buffer.concat(body).toString();
+            const { name } = JSON.parse(body);
+            response.end(`<h1>Halo, ${name}! Ini adalah halaman about</h1>`);
+        });
+    } else {
+        response.end(`<h1>Halaman tidak dapat diakses menggunakan ${method} request</h1>`);
+    }
+}
+Contoh URL lain
+else {
+    response.end('<h1>Halaman tidak ditemukan!</h1>');
+}
+
+
+4️⃣ Membuat Server
+const http = require('http');
+
+const requestListener = (request, response) => {
+    response.setHeader('Content-Type', 'text/html');
+    response.statusCode = 200;
+
+    const { method, url } = request;
+
+    // routing di sini...
+};
+
+const server = http.createServer(requestListener);
+const port = 5000;
+const host = 'localhost';
+
+server.listen(port, host, () => {
+    console.log(`Server berjalan pada http://${host}:${port}`);
+});
+
+
+5️⃣ Testing Routing Request
+a. Pakai Terminal (curl)
+GET homepage:
+curl http://localhost:5000
+POST About:
+curl -X POST http://localhost:5000/about \
+-H "Content-Type: application/json" \
+-d '{"name":"Regina"}'
+GET URL lain:
+curl http://localhost:5000/test
+
+b. Pakai Browser
+http://localhost:5000/ → homepage
+http://localhost:5000/about → about
+http://localhost:5000/anything → halaman tidak ditemukan
+❌ Browser hanya bisa GET request, untuk POST gunakan curl atau Postman.
+
+
+6️⃣ Tips Penting
+Backtick `...` wajib kalau mau sisipkan variabel di string (${method}, ${name})
+POST request membutuhkan body → gunakan request.on('data') dan request.on('end')
+Jangan tutup terminal server saat testing, server harus tetap jalan
+
+
+7️⃣ Ringkasnya
+URL	Method	Response
+/	GET	Ini adalah homepage
+/	selain GET	Halaman tidak dapat diakses dengan <method> request
+/about	GET	Halo ini adalah halaman about
+/about	POST + body JSON	Halo, <name>! Ini adalah halaman about
+/about	selain GET/POST	Halaman tidak dapat diakses menggunakan <method> request
+lain	semua	Halaman tidak ditemukan!
